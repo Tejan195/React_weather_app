@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import './WeatherDetails.css';
 
 const WeatherDetails = () => {
-    const [weatherData, setWeatherData] = useState(false);
+    const [weatherData, setWeatherData] = useState(null);
     const [buttonText, setButtonText] = useState('Current Location');
     const API = import.meta.env.VITE_API_KEY;
     const [sunrise, setSunrise] = useState('');
@@ -12,6 +12,43 @@ const WeatherDetails = () => {
     const[currentTime,SetCurrentTime] = useState('');
     const[currentDate,setCurrentDate] = useState('');
     const[timeZone,setTimeZone] = useState(0);
+
+    const fetchWeatherDataByCoords = async (lat, lon) => {
+      try {
+          const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
+          const response = await fetch(url);
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          setWeatherData({
+              humidity: data.main.humidity,
+              clouds: data.clouds.all,
+              location: data.name,
+              weatherCondition: data.weather[0].main,
+              windspeed: data.wind.speed,
+              pressure: data.main.pressure,
+              feeltemp: data.main.feels_like,
+              temperature: data.main.temp,
+              timezone: data.timezone
+          });
+          updateSunriseSunSet(data);
+          setTimeZone(data.timezone);
+          updateBg(data.weather[0].main.toLowerCase());
+          const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
+      const forecastResponse = await fetch(forecastUrl);
+      if (!forecastResponse.ok) {
+          throw new Error('Network response was not ok for forecast');
+      }
+      const forecastData = await forecastResponse.json();
+      const hourlyData = forecastData.list.filter((_, index) => index < 8).slice(0, 5);
+      const dailyData = forecastData.list.filter((_, index) => index % 8 === 0).slice(0, 5);
+      setHourly(hourlyData);
+      setDaily(dailyData);
+      } catch (error) {
+          console.error("Fetching data problem", error);
+      }
+  };
     const fetchWeatherData = async (city) => {
         try {
             const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API}&units=metric`;
@@ -37,41 +74,6 @@ const WeatherDetails = () => {
         } catch (error) {
             console.error("Fetching data problem", error);
             alert("Input a valid location");
-        }
-    };
-    const fetchWeatherDataByCoords = async (lat, lon) => {
-        try {
-            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            setWeatherData({
-                humidity: data.main.humidity,
-                clouds: data.clouds.all,
-                location: data.name,
-                weatherCondition: data.weather[0].main,
-                windspeed: data.wind.speed,
-                pressure: data.main.pressure,
-                feeltemp: data.main.feels_like,
-                temperature: data.main.temp,
-                timezone: data.timezone
-            });
-            updateSunriseSunSet(data);
-            updateBg(data.weather[0].main.toLowerCase());
-            const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
-        const forecastResponse = await fetch(forecastUrl);
-        if (!forecastResponse.ok) {
-            throw new Error('Network response was not ok for forecast');
-        }
-        const forecastData = await forecastResponse.json();
-        const hourlyData = forecastData.list.filter((_, index) => index < 8).slice(0, 5);
-        const dailyData = forecastData.list.filter((_, index) => index % 8 === 0).slice(0, 5);
-        setHourly(hourlyData);
-        setDaily(dailyData);
-        } catch (error) {
-            console.error("Fetching data problem", error);
         }
     };
 const updateSunriseSunSet=(data)=>{
