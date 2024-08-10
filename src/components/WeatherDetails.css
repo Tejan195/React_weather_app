@@ -1,0 +1,104 @@
+.card{
+    border-radius: 15px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.1); 
+    color: #212529;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px); 
+    transition: background-color 0.5s,color 0.5s,box-shadow 0.5s;
+}
+.dark-mode .card {
+    background-color: rgba(52, 58, 64, 0.1);
+    color: #e0e0e0;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2), 0 6px 20px rgba(255, 255, 255, 0.2);
+}
+
+.card-title {
+    font-weight: 600;
+}
+
+.card ul li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(233, 236, 239, 0.5); 
+}
+
+.card ul li:last-child {
+    border-bottom: none;
+}
+#darkModeToggle {
+    height: 50px;
+    width: 7rem;
+}
+
+#currentLocationBtn {
+    height: 50px;
+    max-width: 300px;
+    margin-left: 2rem;
+}
+.btn-light {
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    padding: 0.5em 1em;
+    font-weight: 600;
+    transition: background-color 0.5s,color 0.5s,border-color 0.5s;
+}
+
+.btn-success {
+    border-radius: 25px;
+    padding: 0.5em 1em;
+    font-weight: 600;
+    transition: background-color 0.5s, color 0.5s, border-color 0.5s;
+}
+#darkModeToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 25px;
+    padding: 0.5em 1em;
+    font-weight: 600;
+}
+
+#darkModeToggle input[type="checkbox"] {
+    margin-left: 10px;
+}
+#moonIcon, #sunIcon {
+    font-size: 20px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#sunIcon {
+    transform: translateX(270%);
+    opacity:1 ;
+}
+@media(max-width:1024px){
+    #darkModeToggle {
+        height: 40px;
+        width: 100px;
+        font-size: 12px;
+        display: flex;
+        line-height: 1.2;
+    }
+    #currentLocationBtn {
+        margin-left: 0.5rem;
+        height: 40px;
+        font-size: 13px;
+        width: 7rem;
+        margin-top: 4px;
+    }
+}
+@media(max-width: 768px) {
+    #darkModeToggle {
+        height: 40px;
+        width: 100px;
+        font-size: 12px;
+        display: flex;
+        line-height: 1.2;
+    }
+    #currentLocationBtn {
+        margin-left: -3px;
+        height: 40px;
+        margin-top: 10px;
+    }
+}
