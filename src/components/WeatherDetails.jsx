@@ -33,6 +33,7 @@ const WeatherDetails = () => {
             updateSunriseSunSet(data);
             fetchHrAndDl(city);
             setTimeZone(data.timezone);
+            updateBg(data.weather[0].main.toLowerCase());
         } catch (error) {
             console.error("Fetching data problem", error);
             alert("Input a valid location");
@@ -58,6 +59,7 @@ const WeatherDetails = () => {
                 timezone: data.timezone
             });
             updateSunriseSunSet(data);
+            updateBg(data.weather[0].main.toLowerCase());
         } catch (error) {
             console.error("Fetching data problem", error);
         }
@@ -114,6 +116,7 @@ useEffect(() => {
     
     return () => clearInterval(intervalId); 
 }, [timeZone]);
+
 
     const handleClick = () => {
         if (navigator.geolocation) {
@@ -175,7 +178,22 @@ useEffect(() => {
             searchBtn.removeEventListener('click', search);
         };
     }, []);
-
+    const updateBg = (weather) => {
+      const body = document.body;
+      body.classList.remove('clear-weather', 'cloudy-weather', 'rainy-weather');
+      if (weather.includes('clear')) {
+          body.classList.add('clear-weather');
+      } else if (weather.includes('cloud')) {
+          body.classList.add('cloudy-weather');
+      } else if (weather.includes('rain')) {
+          body.classList.add('rainy-weather');
+      } else {
+          body.classList.add('clear-weather');
+      }
+      if (body.classList.contains('dark-mode')) {
+          body.classList.add('dark-mode');
+      }
+  };
     useEffect(() => {
         const lastSearchedCity = localStorage.getItem('lastSearchedCity');
         if (lastSearchedCity) {
