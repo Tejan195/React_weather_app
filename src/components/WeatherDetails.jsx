@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import './WeatherDetails.css';
 
 const WeatherDetails = () => {
-    const [weatherData, setWeatherData] = useState(null);
+    const [weatherData, setWeatherData] = useState(false);
     const [buttonText, setButtonText] = useState('Current Location');
     const API = import.meta.env.VITE_API_KEY;
     const [sunrise, setSunrise] = useState('');
@@ -60,6 +60,16 @@ const WeatherDetails = () => {
             });
             updateSunriseSunSet(data);
             updateBg(data.weather[0].main.toLowerCase());
+            const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
+        const forecastResponse = await fetch(forecastUrl);
+        if (!forecastResponse.ok) {
+            throw new Error('Network response was not ok for forecast');
+        }
+        const forecastData = await forecastResponse.json();
+        const hourlyData = forecastData.list.filter((_, index) => index < 8).slice(0, 5);
+        const dailyData = forecastData.list.filter((_, index) => index % 8 === 0).slice(0, 5);
+        setHourly(hourlyData);
+        setDaily(dailyData);
         } catch (error) {
             console.error("Fetching data problem", error);
         }
@@ -228,7 +238,7 @@ useEffect(() => {
         "snow":"fa-snowflake",
         "mist":"fa-smog"
     };
-      
+
     return (
         <div>
       <div className="row mb-4">
