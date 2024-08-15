@@ -37,7 +37,7 @@ To get started with this project, follow these steps:
     npm start
     ```
 
-    Your application will be available at `https://tejanweather.netlify.app/`.
+    link: https://tejanweather.netlify.app/
 
 ## Usage
 
