@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import './WeatherDetails.css';
 
 const WeatherDetails = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [buttonText, setButtonText] = useState('Current Location');
-    const API = import.meta.env.VITE_API_KEY;
+    const API = useMemo(()=> import.meta.env.VITE_API_KEY,[]);
     const [sunrise, setSunrise] = useState('');
     const [sunset, setSunset] = useState('');
     const[hourly,setHourly]=useState([]);
@@ -13,10 +13,10 @@ const WeatherDetails = () => {
     const[currentDate,setCurrentDate] = useState('');
     const[timeZone,setTimeZone] = useState(0);
 
-    const fetchWeatherDataByCoords = async (lat, lon) => {
+    const fetchWeatherDataByCoords = useCallback( async (lat, lon) => {
       try {
-          const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API}&units=metric`;
-          const response = await fetch(url);
+          const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API}&units=metric`);
+          
           if (!response.ok) {
               throw new Error('Network response was not ok');
           }
@@ -48,46 +48,45 @@ const WeatherDetails = () => {
       } catch (error) {
           console.error("Fetching data problem", error);
       }
-  };
-    const fetchWeatherData = async (city) => {
-        try {
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API}&units=metric`;
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Response from the network was not ok');
-            }
-            const data = await response.json();
-            setWeatherData({
-                humidity: data.main.humidity,
-                clouds: data.clouds.all,
-                location: data.name,
-                weatherCondition: data.weather[0].main,
-                windspeed: data.wind.speed,
-                pressure: data.main.pressure,
-                feeltemp: data.main.feels_like,
-                temperature: data.main.temp
-            });
-            updateSunriseSunSet(data);
-            fetchHrAndDl(city);
-            setTimeZone(data.timezone);
-            updateBg(data.weather[0].main.toLowerCase());
-        } catch (error) {
-            console.error("Fetching data problem", error);
-            alert("Input a valid location");
-        }
-    };
-const updateSunriseSunSet=(data)=>{
+  },[API]);
+  const fetchWeatherData = useCallback(async (city) => {
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API}&units=metric`);
+        if (!response.ok) throw new Error('Response from the network was not ok');
+        const data = await response.json();
+
+        setWeatherData({
+            humidity: data.main.humidity,
+            clouds: data.clouds.all,
+            location: data.name,
+            weatherCondition: data.weather[0].main,
+            windspeed: data.wind.speed,
+            pressure: data.main.pressure,
+            feeltemp: data.main.feels_like,
+            temperature: data.main.temp
+        });
+
+        updateSunriseSunSet(data);
+        fetchHrAndDl(city);
+        setTimeZone(data.timezone);
+        updateBg(data.weather[0].main.toLowerCase());
+    } catch (error) {
+        console.error("Fetching data problem", error);
+        alert("Input a valid location");
+    }
+}, [API]);
+const updateSunriseSunSet=useCallback((data)=>{
     const sunriseDate = new Date(data.sys.sunrise * 1000);
             const sunsetDate = new Date(data.sys.sunset * 1000);
             const sunrisetTime = sunriseDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:true});
             const sunseTime =sunsetDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:true});
             setSunrise(sunrisetTime);
             setSunset(sunseTime);
-};
-const fetchHrAndDl = async(city)=>{
-    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API}&units=metric`;
+},[]);
+const fetchHrAndDl = useCallback(async(city)=>{
+
     try{
-        const response = await fetch(url);
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API}&units=metric`);
         if(!response.ok){
             throw new Error("Response from the Network was not Ok");
         }
@@ -101,7 +100,7 @@ const fetchHrAndDl = async(city)=>{
     }catch(error){
         console.error("Fetching data problem",error);
     }
-}
+},[API]);
 useEffect(() => {
     const updateTime = () => {
         if (timeZone) {
@@ -130,7 +129,7 @@ useEffect(() => {
 }, [timeZone]);
 
 
-    const handleClick = () => {
+    const handleClick = useCallback(() => {
         if (navigator.geolocation) {
             setButtonText('Wait...');
             navigator.geolocation.getCurrentPosition(position => {
@@ -150,7 +149,7 @@ useEffect(() => {
             console.error("Geolocation is not supported by this browser");
             setButtonText('Current Location');
         }
-    };
+    },[]);
 
     
 
@@ -190,7 +189,7 @@ useEffect(() => {
             searchBtn.removeEventListener('click', search);
         };
     }, []);
-    const updateBg = (weather) => {
+    const updateBg = useCallback((weather) => {
       const body = document.body;
       body.classList.remove('clear-weather', 'cloudy-weather', 'rainy-weather');
       if (weather.includes('clear')) {
@@ -205,7 +204,7 @@ useEffect(() => {
       if (body.classList.contains('dark-mode')) {
           body.classList.add('dark-mode');
       }
-  };
+  },[]);
     useEffect(() => {
         const lastSearchedCity = localStorage.getItem('lastSearchedCity');
         if (lastSearchedCity) {
@@ -218,14 +217,9 @@ useEffect(() => {
                     fetchWeatherDataByCoords(latitude, longitude);
                 }, 900000);
             }, error => {
-                console.error("Error getting Location", error);
-                const defaultCity = "New Delhi";
-                fetchWeatherData(defaultCity);
+                console.error("Error getting location", error);
+                fetchWeatherData("New Delhi");
             });
-        } else {
-            const defaultCity = "New Delhi";
-            fetchWeatherData(defaultCity);
-            console.error("Geolocation is not supported by this browser");
         }
     }, []);
     const weatherIcon = {
